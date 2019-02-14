@@ -2,6 +2,8 @@
 #include <imgui\imgui_impl_sdl_gl3.h>
 #include <glm\gtc\matrix_transform.hpp>
 
+const int NUM_PARTICLES = 5000;
+
 namespace Box {
 	void drawCube();
 }
@@ -39,11 +41,28 @@ namespace Cube {
 }
 
 
+struct Particle {
+	glm::vec3 pos = { 0, 0, 0 };
+	glm::vec3 vel = { 0, 0, 0 };
+	float mass = 1;
+};
+
+struct ParticleSystem {
+	Particle array[NUM_PARTICLES];
+	void Init() {
+		for (int i = 0; i < NUM_PARTICLES; i++) {
+			array[i].pos = { (float)(rand() % 900) / 100 - 4.5f, (float)(rand() % 400) / 100 + 5.5f, (float)(rand() % 900) / 100 - 4.5f };
+			array[i].vel = { (float)(rand() % 200) / 100 - 1, (float)(rand() % 200) / 100 - 1, (float)(rand() % 200) / 100 - 1 };
+		}
+	}
+};
+
+static ParticleSystem partSystem;
 
 // Boolean variables allow to show/hide the primitives
 bool renderSphere = false;
 bool renderCapsule = false;
-bool renderParticles = false;
+bool renderParticles = true;
 bool renderMesh = false;
 bool renderFiber = false;
 bool renderCube = false;
@@ -61,7 +80,14 @@ void renderPrims() {
 
 	if (renderParticles) {
 		int startDrawingFromParticle = 0;
-		int numParticlesToDraw = Particles::maxParticles;
+		int numParticlesToDraw = NUM_PARTICLES;
+		float partData[NUM_PARTICLES * 3];
+		for (int i = 0; i < NUM_PARTICLES; i++) {
+			partData[i * 3] = partSystem.array[i].pos[0];
+			partData[i * 3 + 1] = partSystem.array[i].pos[1];
+			partData[i * 3 + 2] = partSystem.array[i].pos[2];
+		}
+		Particles::updateParticles(0, NUM_PARTICLES, partData);
 		Particles::drawParticles(startDrawingFromParticle, numParticlesToDraw);
 	}
 
@@ -89,7 +115,7 @@ void GUI() {
 	ImGui::End();
 
 	// Example code -- ImGui test window. Most of the sample code is in ImGui::ShowTestWindow()
-	bool show_test_window = false;
+	bool show_test_window = true;
 	if(show_test_window) {
 		ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiSetCond_FirstUseEver);
 		ImGui::ShowTestWindow(&show_test_window);
@@ -99,6 +125,7 @@ void GUI() {
 void PhysicsInit() {
 	// Do your initialization code here...
 	// ...................................
+	partSystem.Init();
 }
 
 void PhysicsUpdate(float dt) {
