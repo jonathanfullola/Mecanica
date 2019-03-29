@@ -226,8 +226,10 @@ void renderPrims() {
 
 
 	if (renderSphere) {
-		Sphere::updateSphere(ball.center, ball.radius);
-		Sphere::drawSphere();
+		if (ball.enabled) {
+			Sphere::updateSphere(ball.center, ball.radius);
+			Sphere::drawSphere();
+		}
 	}
 	if (renderCapsule)
 		Capsule::drawCapsule();
@@ -275,10 +277,23 @@ void GUI() {
 				bendingD = bending[1];
 			}
 			if (ImGui::DragFloat("Particle link distance", &fiberDist, 0.05f)) {
-				if (fiberDist < 0) { ELASTICITY = 0.f; }
+				if (fiberDist < 0) { fiberDist = 0.f; }
 			}
 			ImGui::TreePop();
 		}
+		if (ImGui::TreeNode("Elasticity & Friction"))
+		{
+			if (ImGui::DragFloat("Elastic Coefficient", &ELASTICITY, 0.05f)) {
+				if (ELASTICITY < 0) { ELASTICITY = 0.f; }
+				else if (ELASTICITY > 1) { ELASTICITY = 1.f; }
+			}
+			if (ImGui::DragFloat("Friction Coefficient", &FRICTION, 0.05f)) {
+				if (FRICTION < 0) { FRICTION = 0.f; }
+				else if (FRICTION > 1) { FRICTION = 1.f; }
+			}
+			ImGui::TreePop();
+		}
+		ImGui::Checkbox("Use Sphere Collider", &ball.enabled);
 	}
 	// .........................
 	
@@ -295,7 +310,7 @@ void GUI() {
 void PhysicsInit() {
 	// Do your initialization code here...
 	// ...................................
-	ball.center = { 0 , 5, 0 };
+	ball.center = { 0 , 2, 0 };
 	ball.radius = 1.f;
 	colliderArray.push_back(&ball);
 	colliderArray.push_back(new PlaneCol(glm::vec3(1, 0, 0), glm::vec3(-5, 0, -5)));
@@ -319,6 +334,7 @@ void PhysicsUpdate(float dt) {
 	if (playSimulation) {
 		for (int i = 0; i < NUM_FIBERS; i++) {
 			verlet(dt, fiberSystem.fibers[i], colliderArray, forceArray);
+
 		}
 	}
 }
