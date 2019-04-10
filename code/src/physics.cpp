@@ -38,7 +38,35 @@ namespace Cube {
 	extern void drawCube();
 }
 
+struct Collider {
+	virtual bool checkCollision(const glm::vec3& next_pos, float radius) = 0;
+};
+struct RigidSphere : Collider {
+	//...
+	glm::vec3 pos;
+	glm::mat3 rot;
+	glm::vec3 linearMomentum;
+	glm::vec3 angularMomentum;
+	float mass;
+	bool checkCollision(const glm::vec3& next_pos, float radius) override {
+		//...
+	}
+};
+struct PlaneCol : Collider {
+	bool checkCollision(const glm::vec3& next_pos, float radius) override {
+		//...
+	}
+};
+float computeImpulseCorrection(float massA, glm::vec3 ra, glm::mat3 invIa, float massB, glm::vec3 rb, glm::mat3 invIb, float vrel, float epsilon, glm::vec3 normal) {
 
+}
+void updateColliders(Collider* A, Collider* B) {
+
+}
+
+void euler(float dt, RigidSphere& sph) {
+
+}
 
 // Boolean variables allow to show/hide the primitives
 bool renderSphere = false;
